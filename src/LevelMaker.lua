@@ -14,7 +14,7 @@ function LevelMaker.generate(width, height)
     local tiles = {}
     local entities = {}
     local objects = {}
-
+    
     local tileID = TILE_ID_GROUND
     
     -- whether we should draw our tiles with toppers
@@ -26,6 +26,8 @@ function LevelMaker.generate(width, height)
     local keyConsumed = false
 
     local possibleLockCol = {}
+
+    local safeCol = 3
 
     -- insert blank tables into tiles for later access
     for x = 1, height do
@@ -43,13 +45,22 @@ function LevelMaker.generate(width, height)
                 Tile(x, y, tileID, nil, tileset, topperset))
         end
 
-        -- chance to just be emptiness
-        if math.random(7) == 1 then
+        if x <= safeCol then
+            tileID = TILE_ID_GROUND
+
+            for y = 7, height do
+                table.insert(tiles[y],
+                    Tile(x, y, tileID, y == 7 and topper or nil, tileset, topperset))
+            end
+
+        elseif math.random(7) == 1 then
+            
             for y = 7, height do
                 table.insert(tiles[y],
                     Tile(x, y, tileID, nil, tileset, topperset))
             end
         else
+
             tileID = TILE_ID_GROUND
 
             -- height at which we would spawn a potential jump block
@@ -228,12 +239,17 @@ function LevelMaker.generate(width, height)
                                 x = (lockX + 2) * TILE_SIZE,
                                 y = (6 - 3) * TILE_SIZE,
                                 width = 16,
-                                height = 48
+                                height = 48,
+                                collidable = true,
+
+                                onCollide = function(self, player)
+                                    player.levelComplete = true
+                                end,
+
+                                solid = true
                             }
                                 
                         )
-                        
-
                     end
                 end,
                 solid = true

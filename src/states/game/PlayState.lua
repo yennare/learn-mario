@@ -8,9 +8,10 @@
 PlayState = Class{__includes = BaseState}
 
 function PlayState:init()
+    local levelWidth = 40
     self.camX = 0
     self.camY = 0
-    self.level = LevelMaker.generate(40, 10)
+    self.level = LevelMaker.generate(levelWidth, 10)
     self.tileMap = self.level.tileMap
     self.background = math.random(3)
     self.keys = 3
@@ -32,12 +33,15 @@ function PlayState:init()
         map = self.tileMap,
         level = self.level
     })
-
     self:spawnEnemies()
 
     self.player:changeState('falling')
 end
+function PlayState:enter(params)
 
+    self.currentLevel = (params and params.currentLevel) or 1
+
+end
 function PlayState:update(dt)
     Timer.update(dt)
 
@@ -63,6 +67,14 @@ function PlayState:update(dt)
     for i = #self.level.objects, 1, -1 do
     if self.level.objects[i].remove then
         table.remove(self.level.objects, i)
+    end
+
+    if self.player.levelComplete then
+        self.player.levelComplete = false
+
+        gStateMachine:change('newLevel', {
+            currentLevel = self.currentLevel + 1
+        })
     end
 end
 end
@@ -90,6 +102,14 @@ function PlayState:render()
     love.graphics.print(tostring(self.player.score), 5, 5)
     love.graphics.setColor(1, 1, 1, 1)
     love.graphics.print(tostring(self.player.score), 4, 4)
+
+    -- render level
+    love.graphics.setFont(gFonts['medium'])
+    love.graphics.setColor(0, 0, 0, 1)
+    love.graphics.printf('Level ' .. tostring(self.currentLevel), 0 , 5, VIRTUAL_WIDTH - 4, 'right')
+    love.graphics.setColor(1, 1, 1, 1)
+    love.graphics.printf('Level ' .. tostring(self.currentLevel), 1, 4, VIRTUAL_WIDTH - 4, 'right')
+
 
     if self.player.hasKey then
         love.graphics.draw(gTextures['keys'], gFrames['keys'][self.keys], 2, 15)

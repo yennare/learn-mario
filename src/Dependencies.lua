@@ -31,6 +31,7 @@ require 'src.Util'
 require 'src.states.BaseState'
 require 'src.states.game.PlayState'
 require 'src.states.game.StartState'
+require 'src.states.game.NewLevelState'
 
 -- entity states
 require 'src.states.entity.PlayerFallingState'
