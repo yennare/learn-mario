@@ -105,8 +105,10 @@ function Player:checkObjectCollisions()
 
                 -- Se è un jump-block (colpito da sotto)
                 if object.hit ~= nil then
-                    if self.dy < 0 and object.onCollide then
+                    if self.dy < 0 and self.y > object.y and object.onCollide then
                         object:onCollide(self)
+                        self.dy = 0
+                        self.y = object.y + object.height
                     end
                 else
                     -- Tutti gli altri solid (es. lock)

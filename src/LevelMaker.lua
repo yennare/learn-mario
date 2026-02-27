@@ -11,6 +11,7 @@
 LevelMaker = Class{}
 
 function LevelMaker.generate(width, height)
+
     local tiles = {}
     local entities = {}
     local objects = {}
@@ -22,6 +23,7 @@ function LevelMaker.generate(width, height)
     local tileset = math.random(20)
     local topperset = math.random(20)
 
+    local keyBlocks = {}
     local keySpawned = false
     local keyConsumed = false
 
@@ -114,10 +116,9 @@ function LevelMaker.generate(width, height)
 
             -- chance to spawn a block
             if math.random(5) == 1 then
-                table.insert(objects,
-
+                
                     -- jump block
-                    GameObject {
+                    local block = GameObject {
                         texture = 'jump-blocks',
                         x = (x - 1) * TILE_SIZE,
                         y = (blockHeight - 1) * TILE_SIZE,
@@ -135,39 +136,7 @@ function LevelMaker.generate(width, height)
 
                             -- spawn a gem if we haven't already hit the block
                             if not obj.hit then
-
-                                -- chance to spawn gem, not guaranteed
-                                if math.random(5) == 1 then
-
-                                    -- maintain reference so we can set it to nil
-                                    local gem = GameObject {
-                                        texture = 'gems',
-                                        x = (x - 1) * TILE_SIZE,
-                                        y = (blockHeight - 1) * TILE_SIZE - 4,
-                                        width = 16,
-                                        height = 16,
-                                        frame = math.random(#GEMS),
-                                        collidable = true,
-                                        consumable = true,
-                                        solid = false,
-
-                                        -- gem has its own function to add to the player's score
-                                        onConsume = function(self, player)
-                                            gSounds['pickup']:play()
-                                            player.score = player.score + 100
-                                        end
-                                    }
-                                    
-                                    -- make the gem move up from the block and play a sound
-                                    Timer.tween(0.1, {
-                                        [gem] = {y = (blockHeight - 2) * TILE_SIZE}
-                                    })
-                                    gSounds['powerup-reveal']:play()
-
-                                    table.insert(objects, gem)
-                                end
-
-                                if not keySpawned and math.random(3) == 1 then
+                                if not keySpawned and obj.containsKey then
 
                                     
                                     local key = GameObject {
@@ -197,7 +166,39 @@ function LevelMaker.generate(width, height)
                                     table.insert(objects, key)
                                     keySpawned = true
 
+                                
+                                -- chance to spawn gem, not guaranteed
+                                elseif math.random(5) == 1 then
+
+                                    -- maintain reference so we can set it to nil
+                                    local gem = GameObject {
+                                        texture = 'gems',
+                                        x = (x - 1) * TILE_SIZE,
+                                        y = (blockHeight - 1) * TILE_SIZE - 4,
+                                        width = 16,
+                                        height = 16,
+                                        frame = math.random(#GEMS),
+                                        collidable = true,
+                                        consumable = true,
+                                        solid = false,
+
+                                        -- gem has its own function to add to the player's score
+                                        onConsume = function(self, player)
+                                            gSounds['pickup']:play()
+                                            player.score = player.score + 100
+                                        end
+                                    }
+                                    
+                                    -- make the gem move up from the block and play a sound
+                                    Timer.tween(0.1, {
+                                        [gem] = {y = (blockHeight - 2) * TILE_SIZE}
+                                    })
+                                    gSounds['powerup-reveal']:play()
+
+                                    table.insert(objects, gem)
                                 end
+
+                                
 
                                 obj.hit = true
                             end
@@ -205,9 +206,16 @@ function LevelMaker.generate(width, height)
                             gSounds['empty-block']:play()
                         end
                     }
-                )
+                    table.insert(keyBlocks, block)
+                    table.insert(objects, block)
+                
             end
         end
+    end
+
+    if #keyBlocks > 0 then
+        local chosenBlock = keyBlocks[math.random(#keyBlocks)]
+        chosenBlock.containsKey = true
     end
 
     -- GENERATE LOCK BLOCKS AFTER CHECKING IF COLUMNS HAVE GROUND

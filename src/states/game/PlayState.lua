@@ -8,11 +8,9 @@
 PlayState = Class{__includes = BaseState}
 
 function PlayState:init()
-    local levelWidth = 40
+   
     self.camX = 0
     self.camY = 0
-    self.level = LevelMaker.generate(levelWidth, 10)
-    self.tileMap = self.level.tileMap
     self.background = math.random(3)
     self.keys = 3
     self.backgroundX = 0
@@ -20,9 +18,15 @@ function PlayState:init()
     self.gravityOn = true
     self.gravityAmount = 900
 
+end
+
+function PlayState:generateLevel(levelWidth)
+    self.level = LevelMaker.generate(levelWidth, 10)
+    self.tileMap = self.level.tileMap
+
     self.player = Player({
         x = 0, y = 0,
-        width = 16, height = 20,
+        width = 14, height = 19,
         texture = 'green-alien',
         stateMachine = StateMachine {
             ['idle'] = function() return PlayerIdleState(self.player) end,
@@ -33,15 +37,23 @@ function PlayState:init()
         map = self.tileMap,
         level = self.level
     })
-    self:spawnEnemies()
 
+    self:spawnEnemies()
     self.player:changeState('falling')
 end
+
 function PlayState:enter(params)
 
     self.currentLevel = (params and params.currentLevel) or 1
+    local baseWidth = 40
+    local widthIncrement = 10
+    local levelWidth = baseWidth + (self.currentLevel - 1) * widthIncrement
+
+    self:generateLevel(levelWidth)
 
 end
+
+
 function PlayState:update(dt)
     Timer.update(dt)
 

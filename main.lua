@@ -23,6 +23,7 @@ love.graphics.setDefaultFilter('nearest', 'nearest')
 require 'src.Dependencies'
 
 function love.load()
+
     love.graphics.setFont(gFonts['medium'])
     love.window.setTitle('Super 50 Bros.')
 
@@ -45,7 +46,7 @@ function love.load()
 
     gSounds['music']:setLooping(true)
     gSounds['music']:setVolume(0.5)
-    gSounds['music']:play()
+    -- gSounds['music']:play()
 
     love.keyboard.keysPressed = {}
 end
@@ -67,6 +68,7 @@ function love.keyboard.wasPressed(key)
 end
 
 function love.update(dt)
+    fps = love.timer.getFPS( )
     gStateMachine:update(dt)
 
     love.keyboard.keysPressed = {}
@@ -77,4 +79,5 @@ function love.draw()
     push.start()
     gStateMachine:render()
     push.finish()
+    love.graphics.print('current FPS: ' .. tostring(fps))
 end
